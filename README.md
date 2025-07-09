@@ -45,8 +45,7 @@
 
 ### 前提条件
 
-- Node.js 18.0.0 以上
-- npm または yarn
+- Bun 1.0.0 以上
 
 ### インストール
 
@@ -60,7 +59,7 @@ cd emotion-voice
 2. 依存関係をインストール:
 
 ```bash
-npm install
+bun install
 ```
 
 3. 環境変数を設定:
@@ -96,7 +95,7 @@ VITE_GOOGLE_TTS_API_KEY=your_google_tts_api_key
 ### 開発サーバー起動
 
 ```bash
-npm run dev
+bun run dev
 ```
 
 http://localhost:5173 でアプリケーションにアクセスできます。
@@ -104,20 +103,20 @@ http://localhost:5173 でアプリケーションにアクセスできます。
 ### ビルド
 
 ```bash
-npm run build
+bun run build
 ```
 
 ### テスト
 
 ```bash
-npm run test
+bun run test
 ```
 
 ### Lint & Format
 
 ```bash
-npm run lint    # Biomeによるlintチェック
-npm run format  # コードフォーマット
+bun run lint    # Biomeによるlintチェック
+bun run format  # コードフォーマット
 ```
 
 ## 使用方法
@@ -147,21 +146,3 @@ src/
 ├── hooks/              # カスタムフック
 └── tests/              # テストファイル
 ```
-
-## 貢献
-
-1. このリポジトリをフォーク
-2. 機能ブランチを作成 (`git checkout -b feature/amazing-feature`)
-3. 変更をコミット (`git commit -m 'Add amazing feature'`)
-4. ブランチにプッシュ (`git push origin feature/amazing-feature`)
-5. プルリクエストを作成
-
-## ライセンス
-
-このプロジェクトは MIT ライセンスの下で公開されています。
-
-## 謝辞
-
-- Google Gemini API
-- Google Cloud Text-to-Speech API
-- React + TypeScript + Vite テンプレート
