@@ -10,7 +10,8 @@
     "format": "biome format --write .",
     "test": "vitest",
     "test:ui": "vitest --ui",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit -p tsconfig.test.json"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
