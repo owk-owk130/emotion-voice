@@ -1,31 +1,28 @@
 # Emotion Voice Generator
 
-感情豊かな音声を生成する Web アプリケーション
+AI（Gemini）がテキストから感情を自動判定し、日本語専用に最適化された ElevenLabs で感情豊かな音声を生成する Web アプリケーション
 
 ## 概要
 
-このアプリケーションは、LLM（Google Gemini）を使用してテキストから声の抑揚を推論し、Google Text-to-Speech API で感情豊かな音声を生成します。ユーザーが入力したテキストを解析し、適切な声の抑揚（優しい、甘え、元気など）を自動判定して SSML ベースの音声合成を行います。
+テキストを入力すると、Gemini API が感情を分析し、判定された感情に基づいて ElevenLabs API でパラメータ調整された自然な音声を生成します。日本語に最適化された SSML を使用し、優しい・甘え・元気などの感情表現を音声で再現します。
 
 ## 主な機能
 
-- **感情分析**: テキストから適切な声の抑揚を自動推論
-- **音声生成**: 高品質な日本語音声合成（ja-JP-Neural2-B）
-- **リアルタイム再生**: ブラウザ内での音声再生機能
-- **MP3 ダウンロード**: 生成した音声を MP3 ファイルとしてダウンロード
-- **SSML 表示**: 生成された SSML コードの表示・コピー機能
-- **レスポンシブ UI**: 使いやすいモダンなユーザーインターフェース
+- 🤖 **AI 感情分析**: Gemini API による自動感情判定
+- 🎵 **感情豊かな音声生成**: 8 種類の感情表現（イケメン、優しい、甘え、元気、落ち着き、厳しい、ささやき、励まし）
+- 🎯 **日本語最適化**: ElevenLabs の高品質な多言語音声モデル使用
+- 🔊 **高品質音声**: ElevenLabs API の最新音声技術
+- 🎛️ **音声選択**: 複数の音声から選択可能
+- 📝 **SSML 対応**: 詳細な音声制御が可能
 
 ## 技術スタック
 
-- **ランタイム**: Node.js
-- **ビルドツール**: Vite
-- **フレームワーク**: React 19 + TypeScript
-- **スタイリング**: Tailwind CSS v4
-- **テスト**: Vitest + Testing Library
-- **Linter/Formatter**: Biome
-- **AI/ML API**:
+- **ランタイム**: Bun
+- **フレームワーク**: React + TypeScript + Vite
+- **スタイリング**: Tailwind CSS
+- **AI/音声合成**:
   - Google Gemini API（感情分析）
-  - Google Cloud Text-to-Speech API（音声生成）
+  - ElevenLabs API（音声生成）
 
 ## 声の抑揚システム
 
@@ -33,6 +30,7 @@
 
 | タイプ   | 特徴                             | 使用場面                         |
 | -------- | -------------------------------- | -------------------------------- |
+| イケメン | 低く安定した声                   | カッコいい男性のキャラクター     |
 | 優しい   | 柔らかく温かい話し方             | 挨拶、お礼、慰め、説明           |
 | 甘え     | 甘えた、可愛らしい話し方         | お願い、感謝、親しい関係での会話 |
 | 元気     | 明るく活発な話し方               | 挨拶、励まし、楽しい話題         |
@@ -72,7 +70,7 @@ cp .env.example .env
 
 ```env
 VITE_GEMINI_API_KEY=your_gemini_api_key
-VITE_GOOGLE_TTS_API_KEY=your_google_tts_api_key
+VITE_ELEVENLABS_API_KEY=your_elevenlabs_api_key
 ```
 
 ### API キーの取得
@@ -83,12 +81,11 @@ VITE_GOOGLE_TTS_API_KEY=your_google_tts_api_key
 2. 新しい API キーを作成
 3. `.env`の`VITE_GEMINI_API_KEY`に設定
 
-#### Google Cloud Text-to-Speech API
+#### ElevenLabs API
 
-1. [Google Cloud Console](https://console.cloud.google.com/)でプロジェクトを作成
-2. Text-to-Speech API を有効化
-3. サービスアカウントを作成し、API キーを生成
-4. `.env`の`VITE_GOOGLE_TTS_API_KEY`に設定
+1. [ElevenLabs Dashboard](https://elevenlabs.io/app/settings/api-keys)にアクセス
+2. API キーを生成またはコピー
+3. `.env`の`VITE_ELEVENLABS_API_KEY`に設定
 
 ## 開発
 
@@ -121,28 +118,50 @@ bun run format  # コードフォーマット
 
 ## 使用方法
 
-1. **テキスト入力**: 読み上げたいテキストを入力欄に入力
-2. **音声生成**: 「音声を生成」ボタンをクリック
-3. **結果確認**:
-   - 分析結果（抑揚タイプ、強度、推論理由）を確認
-   - 生成された SSML コードを確認
-4. **音声再生**: 再生ボタンで音声を聞く
-5. **ダウンロード**: 必要に応じて MP3 ファイルをダウンロード
+1. **テキスト入力**: 読み上げたいテキストを入力
+2. **音声選択**: お好みの音声を選択（デフォルトは日本語対応音声）
+3. **音声生成**: 「音声を生成」ボタンをクリック
+4. **結果確認**: AI が判定した感情タイプと理由を確認
+5. **音声再生**: 生成された音声を再生
 
 ## プロジェクト構造
 
 ```
 src/
-├── components/           # Reactコンポーネント
-│   ├── TextInput.tsx    # テキスト入力
-│   ├── VoiceModulationDisplay.tsx  # 分析結果表示
-│   └── AudioPlayer.tsx  # 音声プレイヤー
-├── services/            # 外部API連携
-│   ├── gemini.ts       # Gemini API
-│   ├── tts.ts         # Text-to-Speech API
-│   └── ssml.ts        # SSML関連
-├── types/              # TypeScript型定義
-├── utils/              # ユーティリティ関数
-├── hooks/              # カスタムフック
-└── tests/              # テストファイル
+├── components/         # UIコンポーネント
+│   ├── TextInput.tsx
+│   ├── VoiceSelector.tsx
+│   ├── AudioPlayer.tsx
+│   └── SSMLViewer.tsx
+├── services/          # API連携ロジック
+│   ├── gemini.ts     # Gemini API クライアント
+│   ├── tts.ts        # ElevenLabs API クライアント
+│   └── ssml.ts       # SSML生成ロジック
+├── types/            # TypeScript型定義
+├── utils/            # ユーティリティ関数
+├── hooks/            # カスタムフック
+└── constants/        # 定数定義
 ```
+
+## 感情パラメータ設定
+
+ElevenLabs の音声パラメータは感情に応じて自動調整されます：
+
+| 感情タイプ | stability | similarity_boost | style | 特徴               |
+| ---------- | --------- | ---------------- | ----- | ------------------ |
+| イケメン   | 0.90      | 0.95             | 0.10  | 低く安定した声     |
+| 優しい     | 0.95      | 0.98             | 0.05  | 穏やかで自然な声   |
+| 元気       | 0.85      | 0.90             | 0.20  | 明るく活発な声     |
+| 落ち着き   | 0.98      | 0.99             | 0.02  | 冷静で落ち着いた声 |
+| 甘え       | 0.88      | 0.92             | 0.15  | 甘えた可愛らしい声 |
+| 厳しい     | 0.90      | 0.90             | 0.20  | 厳格で強い声       |
+| ささやき   | 0.95      | 0.96             | 0.08  | 小声で内緒話の声   |
+| 励まし     | 0.88      | 0.90             | 0.18  | 力強く励ます声     |
+
+## トラブルシューティング
+
+### よくある問題
+
+1. **API キーエラー**: 環境変数が正しく設定されているか確認
+2. **音声生成エラー**: ElevenLabs のクレジットが残っているか確認
+3. **感情分析エラー**: Gemini API の利用制限を確認

@@ -14,40 +14,28 @@ vi.mock('@google/generative-ai', () => ({
 describe('GeminiService', () => {
   const geminiService = new GeminiService('test-api-key')
 
-  it('should analyze voice modulation and generate SSML', async () => {
+  it('should analyze emotion from text', async () => {
     const mockResponse = {
       response: {
         text: () => `
-          分析結果：
           {
             "type": "優しい",
             "intensity": "medium",
             "reason": "挨拶の文章なので、優しく温かい印象を与えるため"
           }
-
-          SSML:
-          <speak>
-            <prosody pitch="-2.5%" rate="90%" volume="-0.5dB">
-              こんにちは、今日はいい天気ですね。
-            </prosody>
-          </speak>
         `,
       },
     }
 
     mockGenerateContent.mockResolvedValueOnce(mockResponse)
 
-    const result = await geminiService.analyzeVoiceModulation('こんにちは、今日はいい天気ですね。')
+    const result = await geminiService.analyzeEmotion('こんにちは、今日はいい天気ですね。')
 
-    expect(result.analysis).toEqual({
+    expect(result).toEqual({
       type: '優しい',
       intensity: 'medium',
       reason: '挨拶の文章なので、優しく温かい印象を与えるため',
     })
-
-    expect(result.ssml).toContain('<speak>')
-    expect(result.ssml).toContain('</speak>')
-    expect(result.ssml).toContain('prosody')
   })
 
   it('should throw error for invalid voice type', async () => {
@@ -59,17 +47,13 @@ describe('GeminiService', () => {
             "intensity": "medium",
             "reason": "テスト"
           }
-
-          <speak>test</speak>
         `,
       },
     }
 
     mockGenerateContent.mockResolvedValueOnce(mockResponse)
 
-    await expect(geminiService.analyzeVoiceModulation('テスト')).rejects.toThrow(
-      'Invalid voice type',
-    )
+    await expect(geminiService.analyzeEmotion('テスト')).rejects.toThrow('Invalid voice type')
   })
 
   it('should throw error when JSON is missing', async () => {
@@ -77,15 +61,14 @@ describe('GeminiService', () => {
       response: {
         text: () => `
           JSONがありません
-          <speak>test</speak>
         `,
       },
     }
 
     mockGenerateContent.mockResolvedValueOnce(mockResponse)
 
-    await expect(geminiService.analyzeVoiceModulation('テスト')).rejects.toThrow(
-      'Failed to extract JSON or SSML from response',
+    await expect(geminiService.analyzeEmotion('テスト')).rejects.toThrow(
+      'Failed to extract JSON from response',
     )
   })
 })

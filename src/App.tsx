@@ -1,31 +1,25 @@
 import { useState } from 'react'
 import { AudioPlayer } from './components/AudioPlayer'
+import { SSMLViewer } from './components/SSMLViewer'
 import { TextInput } from './components/TextInput'
-import { VoiceModulationDisplay } from './components/VoiceModulationDisplay'
+import { VoiceSelector } from './components/VoiceSelector'
+import { DEFAULT_VOICE_ID } from './constants/voices'
 import { useVoiceGeneration } from './hooks/useVoiceGeneration'
 
 function App() {
   const [text, setText] = useState('')
+  const [selectedVoiceId, setSelectedVoiceId] = useState<string>(DEFAULT_VOICE_ID)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   // 環境変数からAPIキーを取得
   const geminiApiKey = import.meta.env.VITE_GEMINI_API_KEY
-  const ttsApiKey = import.meta.env.VITE_GOOGLE_TTS_API_KEY
+  const ttsApiKey = import.meta.env.VITE_ELEVENLABS_API_KEY
 
-  const {
-    isLoading,
-    analysis,
-    modulation,
-    audioData,
-    ssml,
-    error,
-    generateVoice,
-    clearError,
-    reset,
-  } = useVoiceGeneration({
-    geminiApiKey: geminiApiKey || '',
-    ttsApiKey: ttsApiKey || '',
-  })
+  const { isLoading, analysis, audioData, error, generateVoice, clearError, reset } =
+    useVoiceGeneration({
+      geminiApiKey: geminiApiKey || '',
+      ttsApiKey: ttsApiKey || '',
+    })
 
   const handleGenerateVoice = async () => {
     if (!geminiApiKey || !ttsApiKey) {
@@ -35,17 +29,14 @@ function App() {
 
     setErrorMessage(null)
     clearError()
-    await generateVoice(text)
+    await generateVoice(text, selectedVoiceId)
   }
 
   const handleClear = () => {
     setText('')
+    setSelectedVoiceId(DEFAULT_VOICE_ID)
     reset()
     setErrorMessage(null)
-  }
-
-  const handleAudioError = (audioError: string) => {
-    setErrorMessage(audioError)
   }
 
   const displayError = error || errorMessage
@@ -142,21 +133,44 @@ function App() {
             </div>
           </div>
 
-          {/* 分析結果表示 */}
-          <VoiceModulationDisplay
-            analysis={analysis}
-            modulation={modulation}
-            ssml={ssml}
-            isLoading={isLoading}
+          {/* 音声選択 */}
+          <VoiceSelector
+            selectedVoiceId={selectedVoiceId}
+            onVoiceChange={setSelectedVoiceId}
+            disabled={isLoading}
           />
 
+          {/* 感情分析結果の表示 */}
+          {analysis && (
+            <div className="bg-white border border-gray-200 rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">🤖 AI感情分析結果</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div>
+                  <p className="text-sm text-gray-600 mb-1">判定された感情</p>
+                  <p className="font-medium text-blue-600 text-lg">{analysis.type}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600 mb-1">感情の強度</p>
+                  <p className="font-medium text-green-600 text-lg">{analysis.intensity}</p>
+                </div>
+                <div className="md:col-span-1">
+                  <p className="text-sm text-gray-600 mb-1">判定理由</p>
+                  <p className="text-gray-800 text-sm">{analysis.reason}</p>
+                </div>
+              </div>
+
+              {/* 生成されたSSMLの表示 */}
+              {analysis.ssml && <SSMLViewer ssml={analysis.ssml} />}
+            </div>
+          )}
+
           {/* 音声プレイヤー */}
-          <AudioPlayer audioData={audioData} isLoading={isLoading} onError={handleAudioError} />
+          {audioData && <AudioPlayer audioData={audioData} isLoading={isLoading} />}
         </div>
 
         {/* フッター */}
         <div className="text-center mt-12 text-sm text-gray-500">
-          <p>Powered by Google Gemini & Google Text-to-Speech</p>
+          <p>Powered by Google Gemini & ElevenLabs (日本語専用)</p>
         </div>
       </div>
     </div>

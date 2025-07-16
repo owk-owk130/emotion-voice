@@ -5,7 +5,7 @@ import { useVoiceGeneration } from '../../src/hooks/useVoiceGeneration'
 // サービスのモック
 vi.mock('../../src/services/gemini', () => ({
   GeminiService: vi.fn().mockImplementation(() => ({
-    analyzeVoiceModulation: vi.fn(),
+    analyzeEmotion: vi.fn(),
   })),
 }))
 
@@ -26,9 +26,7 @@ describe('useVoiceGeneration', () => {
 
     expect(result.current.isLoading).toBe(false)
     expect(result.current.analysis).toBeNull()
-    expect(result.current.modulation).toBeNull()
     expect(result.current.audioData).toBeNull()
-    expect(result.current.ssml).toBeNull()
     expect(result.current.error).toBeNull()
   })
 
@@ -62,9 +60,7 @@ describe('useVoiceGeneration', () => {
 
     expect(result.current.isLoading).toBe(false)
     expect(result.current.analysis).toBeNull()
-    expect(result.current.modulation).toBeNull()
     expect(result.current.audioData).toBeNull()
-    expect(result.current.ssml).toBeNull()
     expect(result.current.error).toBeNull()
   })
 })

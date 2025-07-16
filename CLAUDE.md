@@ -2,7 +2,7 @@
 
 ## プロジェクト概要
 
-このプロジェクトは、LLM（Gemini）を使用してテキストから声の抑揚を推論し、感情豊かな音声を生成するWebアプリケーションです。ユーザーが入力したテキストを解析し、適切な声の抑揚（優しい、甘え、元気など）を推論して、Google Text-to-Speech APIでSSMLを使用した音声を生成・再生します。
+このプロジェクトは、AI（Gemini）がテキストから感情を自動判定し、日本語専用に最適化されたElevenLabsで感情豊かな音声を生成する Web アプリケーションです。ユーザーが入力したテキストをGeminiで感情分析し、判定された感情（優しい、甘え、元気など）に基づいて、ElevenLabs API で日本語音声パラメータ調整を行い高品質な音声を生成・再生します。
 
 ## 技術スタック
 
@@ -12,45 +12,56 @@
 - **スタイリング**: Tailwind CSS
 - **テスト**: Vitest
 - **Linter/Formatter**: Biome
-- **AI/ML**: 
-  - Gemini API（声の抑揚推論）
-  - Google Cloud Text-to-Speech API（音声生成）
+- **AI/ML**:
+  - Gemini API（感情分析・判定）
+  - ElevenLabs API（日本語音声生成）
 
 ## 声の抑揚システム
+
+### 重要なドキュメント
+
+- `docs/ssml-reference.md`: SSML の完全リファレンス
+- 日本語の抑揚制御と感情表現に特に注意してください
+
+### コーディング規則
+
+- SSML 生成時は必ず日本語向けの最適化を行う
+- 感情表現は `prosody` タグを積極的に活用
+- 敬語レベルの一貫性を保つ
 
 ### 抑揚タイプ定義
 
 ```typescript
-type VoiceModulationType = 
-  | '優しい'    // 柔らかく温かい話し方
-  | '甘え'      // 甘えた、可愛らしい話し方
-  | '元気'      // 明るく活発な話し方
-  | '落ち着き'  // 冷静で落ち着いた話し方
-  | '厳しい'    // 厳格で強い話し方
-  | 'ささやき'  // 小声で内緒話のような話し方
-  | '励まし'    // 勇気づける、応援するような話し方
+type VoiceModulationType =
+  | "優しい" // 柔らかく温かい話し方
+  | "甘え" // 甘えた、可愛らしい話し方
+  | "元気" // 明るく活発な話し方
+  | "落ち着き" // 冷静で落ち着いた話し方
+  | "厳しい" // 厳格で強い話し方
+  | "ささやき" // 小声で内緒話のような話し方
+  | "励まし"; // 勇気づける、応援するような話し方
 
 interface VoiceModulation {
   type: VoiceModulationType;
-  intensity: 'low' | 'medium' | 'high';  // 抑揚の強度
-  pitch: string;      // -20% ~ +20%
-  rate: string;       // 50% ~ 200%
-  volume: string;     // -6dB ~ +6dB
-  emphasis: 'none' | 'moderate' | 'strong';
+  intensity: "low" | "medium" | "high"; // 抑揚の強度
+  pitch: string; // -20% ~ +20%
+  rate: string; // 50% ~ 200%
+  volume: string; // -6dB ~ +6dB
+  emphasis: "none" | "moderate" | "strong";
 }
 ```
 
-### SSMLパラメータマッピング
+### SSML パラメータマッピング
 
-| 抑揚タイプ | pitch | rate | volume | 特徴 |
-|-----------|-------|------|--------|------|
-| 優しい | -5% ~ 0% | 85% ~ 95% | -1dB ~ 0dB | 柔らかく穏やかな話し方 |
-| 甘え | +5% ~ +15% | 90% ~ 100% | 0dB ~ +2dB | 高めの声で甘えた話し方 |
-| 元気 | +10% ~ +20% | 110% ~ 130% | +2dB ~ +4dB | 明るく弾んだ話し方 |
-| 落ち着き | -10% ~ -5% | 80% ~ 90% | -2dB ~ 0dB | 低めでゆっくりした話し方 |
-| 厳しい | -5% ~ +5% | 100% ~ 120% | +2dB ~ +5dB | 強く断定的な話し方 |
-| ささやき | 0% ~ +5% | 70% ~ 85% | -6dB ~ -3dB | 小声で内緒話のような話し方 |
-| 励まし | +5% ~ +10% | 100% ~ 110% | +1dB ~ +3dB | 力強く前向きな話し方 |
+| 抑揚タイプ | pitch       | rate        | volume      | 特徴                       |
+| ---------- | ----------- | ----------- | ----------- | -------------------------- |
+| 優しい     | -5% ~ 0%    | 85% ~ 95%   | -1dB ~ 0dB  | 柔らかく穏やかな話し方     |
+| 甘え       | +5% ~ +15%  | 90% ~ 100%  | 0dB ~ +2dB  | 高めの声で甘えた話し方     |
+| 元気       | +10% ~ +20% | 110% ~ 130% | +2dB ~ +4dB | 明るく弾んだ話し方         |
+| 落ち着き   | -10% ~ -5%  | 80% ~ 90%   | -2dB ~ 0dB  | 低めでゆっくりした話し方   |
+| 厳しい     | -5% ~ +5%   | 100% ~ 120% | +2dB ~ +5dB | 強く断定的な話し方         |
+| ささやき   | 0% ~ +5%    | 70% ~ 85%   | -6dB ~ -3dB | 小声で内緒話のような話し方 |
+| 励まし     | +5% ~ +10%  | 100% ~ 110% | +1dB ~ +3dB | 力強く前向きな話し方       |
 
 ## アーキテクチャ
 
@@ -65,7 +76,7 @@ emotion-voice/
 │   │   └── AudioPlayer.tsx         # 音声再生コントロール
 │   ├── services/
 │   │   ├── gemini.ts              # Gemini API クライアント
-│   │   ├── tts.ts                 # Google TTS API クライアント
+│   │   ├── tts.ts                 # ElevenLabs API クライアント
 │   │   └── ssml.ts                # SSML生成ロジック
 │   ├── types/
 │   │   ├── voice.ts               # 声の抑揚関連の型定義
@@ -93,48 +104,48 @@ emotion-voice/
 
 ## 開発ガイドライン
 
-### TypeScript使用方針
+### TypeScript 使用方針
 
 1. **厳格な型定義**: `strict: true`を有効化
 2. **型推論の活用**: 明示的な型定義は必要最小限に
-3. **インターフェース優先**: typeよりinterfaceを優先使用
-4. **nullチェック**: optional chainingとnullish coalescingを活用
+3. **インターフェース優先**: type より interface を優先使用
+4. **null チェック**: optional chaining と nullish coalescing を活用
 
-### Tailwind CSSスタイリング規約
+### Tailwind CSS スタイリング規約
 
 1. **ユーティリティファースト**: インラインクラスで直接スタイリング
 2. **カラーパレット**: デフォルトカラーを使用、カスタムカラーは最小限
 3. **コンポーネント単位**: 各コンポーネントで完結したスタイリング
 4. **ダークモード非対応**: 明るいテーマのみ実装
 
-### Vitestテスト方針
+### Vitest テスト方針
 
 1. **単体テスト重視**: 各関数・モジュールの単体テストを優先
-2. **モック活用**: 外部APIはモック化してテスト
+2. **モック活用**: 外部 API はモック化してテスト
 3. **境界値テスト**: 声の抑揚パラメータの境界値を重点的にテスト
-4. **型安全性テスト**: TypeScriptの型が正しく機能することを確認
+4. **型安全性テスト**: TypeScript の型が正しく機能することを確認
 
-### Biome設定方針
+### Biome 設定方針
 
 1. **コード品質チェック**: 実装完了後は必ず `bun run lint` を実行
 2. **フォーマット**: `bun run format` でコードを整形
-3. **エラーゼロ**: Biomeのエラーがないことを確認してから完了
-4. **推奨ルール**: Biomeの推奨設定を基本的に採用
+3. **エラーゼロ**: Biome のエラーがないことを確認してから完了
+4. **推奨ルール**: Biome の推奨設定を基本的に採用
 
 ### 実装完了チェックリスト
 
 実装を完了とする前に、以下のコマンドを必ず実行してエラーがないことを確認：
 
-1. **Lint**: `bun run lint` - Biomeによるコード品質チェック
+1. **Lint**: `bun run lint` - Biome によるコード品質チェック
 2. **Format**: `bun run format` - コードフォーマットの適用
-3. **Test**: `bun run test` - Vitestによる全テストの実行
+3. **Test**: `bun run test` - Vitest による全テストの実行
 4. **Build**: `bun run build` - ビルドが成功することを確認
 
 すべてのチェックがパスした場合のみ、実装完了とする。
 
-## API仕様
+## API 仕様
 
-### Gemini API使用方法
+### Gemini API 使用方法
 
 ```typescript
 // プロンプトテンプレート
@@ -157,30 +168,22 @@ const VOICE_ANALYSIS_PROMPT = `
 `;
 ```
 
-### Google Text-to-Speech API使用方法
+### ElevenLabs API 使用方法
 
 #### 音声設定
 
-- **言語**: 日本語 (ja-JP)
-- **音声モデル**: ja-JP-Neural2-B (女性音声)
-- **音声タイプ**: Neural2 (高品質な自然音声合成)
+- **言語**: 日本語対応
+- **音声モデル**: eleven_multilingual_v2 (通常) / eleven_turbo_v2 (SSMLサポート)
+- **音声パラメータ**: stability, similarity_boost, style, use_speaker_boost
 
 ```typescript
 // 音声設定
-const voiceConfig = {
-  languageCode: 'ja-JP',
-  name: 'ja-JP-Neural2-B',
-  ssmlGender: 'FEMALE'
-};
-
-// オーディオ設定
-const audioConfig = {
-  audioEncoding: 'MP3',
-  effectsProfileId: ['headphone-class-device'],
-  speakingRate: 1.0,
-  pitch: 0.0,
-  volumeGainDb: 0.0
-};
+interface ElevenLabsVoiceSettings {
+  stability: number;          // 0.0-1.0 (音声の安定性)
+  similarity_boost: number;   // 0.0-1.0 (オリジナル音声への類似度)
+  style: number;             // 0.0-1.0 (表現の強さ)
+  use_speaker_boost: boolean; // 音声品質の向上
+}
 
 // SSML生成例
 const generateSSML = (text: string, modulation: VoiceModulation): string => {
@@ -192,20 +195,27 @@ const generateSSML = (text: string, modulation: VoiceModulation): string => {
     </speak>
   `;
 };
+
+// 感情に応じた設定例（優しい）
+const voiceSettings = {
+  stability: 0.95,
+  similarity_boost: 0.98,
+  style: 0.05,
+  use_speaker_boost: true
+};
 ```
 
 ## 実装フロー
 
 1. **テキスト入力**: ユーザーがテキストを入力
-2. **声の抑揚推論**: Gemini APIでテキストから声の抑揚を推論
-3. **パラメータ変換**: 推論結果をSSMLパラメータに変換
-4. **SSML生成**: テキストと抑揚パラメータからSSMLを生成
-5. **音声生成**: Google TTS APIでSSMLから音声データを生成
-6. **音声再生**: Web Audio APIで音声を再生
+2. **感情分析**: Gemini API がテキストを分析して感情・抑揚タイプを自動判定
+3. **音声生成**: ElevenLabs API で判定された感情に応じた日本語専用音声設定により高品質な音声データを生成
+4. **音声再生**: Web Audio API で音声を再生
+5. **結果表示**: AI分析結果（感情タイプ、強度、判定理由）をユーザーに表示
 
 ## エラーハンドリング方針
 
-- API呼び出しエラー: ユーザーフレンドリーなエラーメッセージ表示
+- API 呼び出しエラー: ユーザーフレンドリーなエラーメッセージ表示
 - ネットワークエラー: リトライ機能の実装
 - 音声再生エラー: フォールバック処理の実装
 
@@ -213,7 +223,7 @@ const generateSSML = (text: string, modulation: VoiceModulation): string => {
 
 ```env
 VITE_GEMINI_API_KEY=your_gemini_api_key
-VITE_GOOGLE_TTS_API_KEY=your_google_tts_api_key
+VITE_ELEVENLABS_API_KEY=your_elevenlabs_api_key
 ```
 
 ## 今後の拡張可能性
